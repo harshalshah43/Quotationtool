@@ -1,0 +1,22 @@
+{% extends "core/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+
+  <div class="row">
+    <div class="col-sm-12" style="padding:30px;border: radius 30px;">
+      <h2 class="text-center alert alert-danger">
+        Terms and Conditions for {{quote.party.name}}
+      </h2>
+      <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{t_form|crispy}}
+          <input type="hidden" name="next" value="{{request.META.HTTP_REFERER}}">
+          <br/>
+          <button class="btn btn-primary" type ="submit" name="action">Next</a></button>
+          <a href="{% url 'parties' %}"><button type="button" class="btn btn-warning" >Cancel</button></a>
+      </form>
+    </div>
+    <div class="col"></div>
+  </div>
+{% endblock content %}

@@ -1,0 +1,46 @@
+{% extends 'core/base.html' %}
+{% block content %}
+{% load crispy_forms_tags %}
+<div class="col-md-10 offset-md-1 mt-0">
+    <div class="container-lg" style="text-align: center">
+        <div class="row">
+            {% include 'partials/menu.html' %}
+            <div class="col-sm-9" style="padding:30px;border: radius 30px;">
+                <h4 class="text-center alert alert-danger">
+                    Party List
+                </h4>
+                <div class="my-custom-scrollbar" style="position: relative;height: 600px; overflow: auto;table-layout: fixed;">
+                <div class="table-wrapper-scroll-y" style="display: block;">
+                <table class="table table-striped">
+                    <thead>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Contact</th>
+                        <th></th>
+                        <th>Action</th>
+                    </thead>
+                {% for party in parties %}
+                <tr>
+                    <td>{{party.name}}</td>
+                    <td>{{party.email}}</td>
+                    <td>{{party.phone}}</td>
+                    <td><a href = "{% url 'quote-for-party' party.id %}">Quotations</a></td>
+                    <td><a href = "{% url 'create-quote-for-party' party.id %}"><button class="btn btn-primary btn-block btn-sm">Create Quotation</button></a>
+                    </td>
+                </tr>
+                {% endfor %}
+                <!-- <tr>
+                    <td><a href="{% url 'parties' %}"><button class="btn btn-primary btn-block">Party List</button></a></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><a href="{% url 'quotations' %}"><button class="btn btn-primary btn-block">Quotation List</button></a></td> 
+                </tr> -->
+                </table>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="col-md-10 offset-md-1 mt-5">
+  <div class="container" style="text-align: center">
+    <div class="row">
+      <div class="col-sm-12" style="padding:30px;border: radius 30px;">
+        <h2 class="text-center alert alert-danger">
+         Confirm Delete Party ??
+        </h2>
+        <h4 class="text-center alert alert-info">{{party.name}} ({{quotation_count}} Quotation(s))</h4>
+        <table class="table table-borderless">
+          <thead class="border-bottom font-weight-bold">
+            <tr>
+                <th>Date Posted</th>
+                <th>Total</th>
+            </tr>
+          </thead>
+          {% for quotation in quotations %}
+          <tbody>
+            <tr>
+              <td>{{quotation.date_posted|date:"D d M Y"}}</td>  
+              <td>{{quotation.total}} ₹</td> 
+            </tr>
+          </tbody>
+          {% endfor %}
+          <tr>
+            <td>
+              <a href = "{% url 'delete-party' party.id %}"><button class="btn btn-danger">Yes</button></a>
+            </td>
+            <td>
+              <form method="POST" enctype="multipart/form-data" action = "{% url 'back' %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{request.META.HTTP_REFERER}}">
+              <button class="btn btn-primary" type="submit" name="action">No, Take me back</button>
+              </form>
+            </td>
+          </tr>
+        </table> 
+      </div>
+    </div>
+        
+          <p class="lead">
+    </p>    
+</div>
+</div>
+{% endblock %}  

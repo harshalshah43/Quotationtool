@@ -1,0 +1,167 @@
+{% extends "core/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<!-- JQuery - autosuggest -->
+<link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+<div class="col-md-10 offset-md-1 mt-0">
+<div class="container-lg" style="text-align: center;">
+  <div class="row">
+   <div class="col-sm-3" style="padding:30px;border: radius 30px;">
+    <h4 class="text-center alert alert-danger">NEW ITEM</h4>
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="itemid" id ="itemid"/>
+      <div class="form-group">
+        {{form.item_code|as_crispy_field}} 
+      </div>
+      <div class="form-group">
+        {{form.item_description|as_crispy_field}} 
+      </div>
+      <div class="form-group">
+        {{form.MRP|as_crispy_field}} 
+      </div>
+      <input type="button" class="btn btn-success btn-block" id = "id_save" value="Save">
+      <!-- <button class="btn btn-success btn-block" id = "id_save">Save</button> -->
+    </form>
+    <br/>
+      <div id = "msg" class="alert alert-danger" style="display: none;"></div>
+   </div>
+   <div class="col-sm-9" style="padding:30px;border: radius 30px;">
+    <h4 class="text-center alert alert-danger">ITEM MASTER VIEW</h4>
+    <form method="GET">
+      <div class="form-row">
+          <div class="form-group col-sm-2">
+              {{myfilter.form.item_code|as_crispy_field}}
+          </div>
+          <div class="form-group col-sm-2">
+              {{myfilter.form.item_description|as_crispy_field}}
+          </div>
+          <div class="form-group col-sm-2">
+              {{myfilter.form.MRP|as_crispy_field}}
+          </div>
+          <div class="form-group col-sm-2">
+              {{myfilter.form.BP|as_crispy_field}}
+          </div>
+          <div class="form-group col-sm-2">
+              {{myfilter.form.MOQ|as_crispy_field}}
+          </div>
+          <div class="form-group col-sm-2">
+            <button class="btn btn-primary mt-4" type="submit">Search</button>
+        </div>
+      </div>
+
+  </form>
+    <div class="my-custom-scrollbar" style="position: relative;height: 600px; overflow: auto;table-layout: fixed;">
+      <div class="table-wrapper-scroll-y" style="display: block;">
+      <table class="table table-bordered mb-0" id = "dt-vtable">
+          <thead style="position: sticky;top: 0" class="thead-light">
+              <tr>
+                <th class ="header" scope="col">Item Code</th>
+                <th class ="header" scope="col">Item Description</th>
+                <th class ="header" scope="col">MRP</th>
+                <th class ="header" scope="col">BP</th>
+                <th class ="header" scope="col">MOQ</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id = "tbody">
+                {% for item in items %}
+                <tr>
+                  <td>{{item.item_code}}</td>
+                  <td>{{item.item_description}}</td>
+                  <td>{{item.MRP}}</td>
+                  <td>{{item.BP}}</td>
+                  <td>{{item.MOQ}}</td>
+                  <td><a href="#"><button class="btn btn-warning btn-edit btn-block btn-sm" data-sid = {{item.id}}>EDIT</button></a>
+                    <a href="#"><button class="btn btn-danger btn-del btn-block btn-sm mt-1" data-sid="{{item.id}}">DELETE</button></a>
+                  </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+      </table>
+    </div>
+    </div>
+   </div>
+  </div>
+</div>
+</div>
+<script>
+$(function(){
+    $('#id_save').click(function(e){
+          let i = $('#itemid').val();
+          console.log("itemid",i);
+          let ic = $("#id_item_code").val();
+          let idesc = $("#id_item_description").val();
+          let imrp = $("#id_MRP").val();
+          let csr = $("input[name = csrfmiddlewaretoken]").val();
+          mydata = {itemid:i,item_code:ic,item_description:idesc,MRP:imrp,csrfmiddlewaretoken:csr};
+          $.ajax({
+              url: "{% url 'save-item-master' %}",
+              method: "POST",
+              data:mydata,
+              success: function(response){
+                console.log(response);
+                x = response.items;
+                let output = "";
+                for (i=0;i<x.length;i++)
+                {
+                    output+= "<tr><td>" + response.items[i].item_code + "</td><td>" 
+                    + response.items[i].item_description + "</td><td>" + response.items[i].MRP +
+                    "</td><td><a href='#'><button class='btn btn-warning btn-edit' data-sid = "+ response.items[i].id +">Edit</button></a> <a href='#'><button class='btn btn-danger btn-del' data-sid = "+ response.items[i].id +">Delete</button></a></td></tr>";
+                }
+                if (response.status == "saved")
+                {
+                $("form")[0].reset();
+                $('#tbody').html(output);
+                $('#msg').text("Item "+ic+" saved");
+                $('#msg').show();
+                }
+                else{
+                $('#msg').text("Could not be saved "+response.error);
+                $('#msg').show();
+                }
+              }
+          });
+      });
+    $('#tbody').on('click',".btn-del",function(){
+    let id = $(this).attr("data-sid");
+    let csr = $("input[name = csrfmiddlewaretoken]").val();
+    console.log(id);
+    mydata = {itemid:id,csrfmiddlewaretoken:csr};
+    mythis = this;
+    $.ajax({
+        url: "{% url 'item-master-delete' %}",
+        method: "POST",
+        data : mydata,
+        success : function(response){
+            console.log(response.status);
+            $(mythis).closest("tr").fadeOut();
+        }
+    });
+    });
+    //Editing - Just Auto Filling Form for editing item, not edit operation 
+    $('#tbody').on('click',".btn-edit",function(){
+      let id = $(this).attr("data-sid");
+      let csr = $("input[name = csrfmiddlewaretoken]").val();
+      console.log("Edit Button Clicked");
+      mydata = {itemid:id,csrfmiddlewaretoken:csr};
+      $.ajax({
+        url: "{% url 'item-master-edit' %}",
+        method:"POST",
+        data:mydata,
+        success : function(response){
+          $('#itemid').val(response.itemid);
+          $("#id_item_code").val(response.item_code);
+          $("#id_item_description").val(response.item_description);
+          $("#id_MRP").val(response.MRP);
+        }
+      });
+    });
+})
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+
+{% endblock content %}

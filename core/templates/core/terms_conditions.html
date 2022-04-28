@@ -1,0 +1,36 @@
+<div class="text-left alert alert-info" style="font-size: larger;">
+    <b>Terms and Conditions:-</b><a href="{% url 'edit-tandc' tandc.id %}"><button class="btn btn-outline-primary" style="float: right;">Change Terms and Conditions</button></a>
+    <table class="borderless">
+        <thead>
+            <th></th>
+            <th></th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Prices</td>
+                <td>:{{tandc.prices}}</td>
+            </tr>
+            <tr>
+                <td>Taxes</td>
+                <td>:{{tandc.taxes}}</td>
+            </tr>
+            <tr>
+              <td>Delivery</td>
+              <td>:{{tandc.delivery}}</td>
+          </tr>
+          <tr>
+              <td>Payment</td>
+              <td>:{{tandc.payment}}</td>
+          </tr>
+          <tr>
+              <td>Validity</td>
+              <td>:{{tandc.validity}}</td>
+          </tr>
+          <tr>
+              <td>Freight</td>
+              <td>:{{tandc.freight}}</td>
+          </tr>
+        </tbody>
+    </table>
+    <p class="article-content">{{tandc.comments|linebreaks}}</p>
+</div>

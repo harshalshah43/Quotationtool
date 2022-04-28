@@ -1,0 +1,68 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="col-md-10 offset-md-1 mt-5">
+  <div class="container" style="text-align: center">
+    <div class="row">
+      <div class="col-sm-12" style="padding:30px;border: radius 30px;">
+        <h2 class="text-center alert alert-danger">
+         Confirm Delete Quotation ??
+        </h2>
+        <h4 class="text-center alert alert-info">
+          <div class="container" style="width:100%">
+              <h5 class="card-title">{{quote.party.name}}</h5>
+              <h6 class="card-subtitle mb-2 text-muted"> {{quote.date_posted}}</h6>
+              <p class="card-text">(Total {{quote.total}} ₹ /{{item_count}} items)</p>
+          </div>     
+        </h4>
+        <table class="table table-borderless">
+          <thead class="border-bottom font-weight-bold">
+            <tr>
+                <th>Item Code</th>
+                <th>Price Quoted</th>
+                <th>Qty</th>
+                <th>Subtotal</th>
+                <th></th>
+            </tr>
+          </thead>
+          {% for item in items %}
+          <tbody>
+            <tr>
+              <td>{{item.item_code}}</td>
+              <td>{{item.price_quoted}}</td>  
+              <td>{{item.qty}}</td> 
+              <td>{{item.sub_total}} ₹</td> 
+              <th></th>
+            </tr>
+          </tbody>
+          {% endfor %}
+          <tr style="font-weight: 700;">
+          <h4>
+              <td></td>
+              <td></td>
+              <td>Total</td>
+              <td>{{quote.total}} ₹</td>
+          </h4>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              <a href = "{% url 'delete-quote' quote.id %}"><button class="btn btn-danger">Yes</button></a>
+            </td>
+            <td>
+              <form method="POST" enctype="multipart/form-data" action = "{% url 'back' %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{request.META.HTTP_REFERER}}">
+              <button class="btn btn-primary" type="submit" name="action">No, Take me back</button>
+              </form>
+            </td>
+            <td></td>
+          </tr>
+        </table> 
+      </div>
+    </div>
+        
+          <p class="lead">
+    </p>    
+</div>
+</div>
+{% endblock %}  

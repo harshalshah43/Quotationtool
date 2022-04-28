@@ -1,0 +1,38 @@
+{% extends 'core/base.html' %}
+{% block content %}
+{% load crispy_forms_tags %}
+<div class="col-md-10 offset-md-1 mt-0">
+    <div class="container-lg" style="text-align: center">
+        <div class="row">
+            {% include 'partials/menu.html' %}
+            <div class="col-sm-9" style="padding:30px;border: radius 30px;">
+                <h2 class="text-center alert alert-danger">
+                    Party Master View
+                </h2>
+                <div class="my-custom-scrollbar" style="position: relative;height: 600px; overflow: auto;table-layout: fixed;">
+                <div class="table-wrapper-scroll-y" style="display: block;">
+                <table class="table table-bordered mb-0" id = "dt-vtable">
+                    <thead style="position: sticky;top: 0" class="thead-light">
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Contact</th>
+                        <th>Action</th>
+                    </thead>
+                {% for party in parties %}
+                <tr>
+                    <td>{{party.name}}</td>
+                    <td>{{party.email}}</td>
+                    <td>{{party.phone}}</td>
+                    <td><a href="{% url 'delete-party-confirm' party.id %}"><button class="btn btn-outline-danger btn-block btn-sm">DELETE</button></a>
+                        <a href = "{% url 'edit-party' party.id %}"><button class="btn btn-outline-warning btn-block btn-sm mt-2">EDIT</button></a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </table>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "core/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<!-- JQuery - autosuggest -->
+<link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+<div class="col-md-10 offset-md-1 mt-5">
+<div class="container-lg" style="text-align: center;">
+  <div class="row">
+    {% include 'partials/menu.html' %}
+   <div class="col-sm-9" style="padding:30px;border: radius 30px;">
+    <h4 class="text-center alert alert-danger">{{party.name}}</h4>
+    <h4 class="text-center alert alert-info">Create Quotation</h4>
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{q_form|crispy}}
+      <input type="hidden" name="next" value="{{request.META.HTTP_REFERER}}">
+      <br/>
+      <button class="btn btn-success btn-block" type ="submit" name="action">Save</a></button>
+    </form>
+    <br/>
+    <form method="POST" enctype="multipart/form-data" action = "{% url 'back' %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{request.META.HTTP_REFERER}}">
+      <button class="btn btn-warning" type="submit" name="action">Back</button>
+    </form>
+      <br/>
+   </div>
+  </div>
+</div>
+</div>
+<!-- Jquery autosuggest -->
+<script>
+    $( function() {
+      $( "#id_party" ).autocomplete({
+        source: ""
+      });
+    } );
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+{% endblock content %}

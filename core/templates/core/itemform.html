@@ -1,0 +1,56 @@
+{% extends "core/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<!-- JQuery - autosuggest -->
+<link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+<div class="container mt-5" style="text-align: center;">
+  <div class="row">
+   <div class="col-sm-12" style="padding:30px;border: radius 30px;">
+    <h3 class="text-center alert alert-danger">New Item</h3>
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{form|crispy}}
+      <input type="hidden" name="itemid" id ="itemid"/>
+      <input type="hidden" name="next" value="{{request.META.HTTP_REFERER}}">
+      <br/>
+      <input type="button" class="btn btn-success btn-block" id = "id_save" value="Save">
+    </form>
+    <br/>
+    <div id = "msg" class="alert alert-danger" style="display: none;"></div>
+   </div>
+  </div>
+</div>
+<!-- Jquery autosuggest -->
+<script>
+    $( function() {
+      $('#id_save').click(function(e){
+          let ic = $("#id_item_code").val();
+          let idesc = $("#id_item_description").val();
+          let imrp = $("#id_MRP").val();
+          let csr = $("input[name = csrfmiddlewaretoken]").val();
+          mydata = {item_code:ic,item_description:idesc,MRP:imrp,csrfmiddlewaretoken:csr};
+          $.ajax({
+              url: "{% url 'save-item-master' %}",
+              method: "POST",
+              data:mydata,
+              success: function(response){
+                console.log(response.status);
+                if (response.status == "saved")
+                {
+                $("form")[0].reset();
+                $('#msg').text("Item has been saved Sucessfully");
+                $('#msg').show();
+                }
+                else{
+                $('#msg').text("Could not be saved "+response.error);
+                $('#msg').show();
+                }
+              }
+          });
+      });
+    } );
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+{% endblock content %}

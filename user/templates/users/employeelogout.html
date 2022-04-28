@@ -1,0 +1,18 @@
+{% extends "core/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<div class="col-md-10 offset-md-1 mt-5">
+    <div class="container" style="text-align: center;">
+        <div class="row">
+            <div class="col-sm-12">
+                <h3 class="text-center alert alert-danger">Welcome to Quotation Tool</h3>
+                <h4 class="text-center alert alert-info">Logged out Successful</h4>
+                <h4 class="text-center alert alert-dark"><a href ="{% url 'employee-login' %}">Sign In Again</a></h4>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+{% endblock content %} 

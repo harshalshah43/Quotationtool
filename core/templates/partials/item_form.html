@@ -1,0 +1,56 @@
+{% block content %}
+{% load crispy_forms_tags %}
+<!-- JQuery - autosuggest -->
+<link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+
+<div hx-target = "this" hx-swap = "outerHTML">
+  <div class="container" style="text-align: center;">
+  <ul class="list-group">
+  <form method="POST">
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="form-group col-md-3">
+            {{form.item_code|as_crispy_field}}
+            </div>
+            <div class="form-group col-md-3">
+            {{form.price_quoted|as_crispy_field}}
+            </div>
+            <div class="form-group col-md-3">
+            {{form.qty|as_crispy_field}}
+            </div>
+            <div class="form-group col-md-3">
+            {{form.sub_total|as_crispy_field}}
+            </div>
+        </div>
+        {% if item %}
+        <button class="btn btn-primary btn-md" hx-post = "{% url 'item-update' item.id %}" type = "submit">Save</button>
+        {% else %}
+        <button class="btn btn-primary btn-md" hx-post = "." type = "submit">Add</button>
+        {% endif %}
+    </form>
+    </ul>  
+  </div>
+</div>
+
+<!-- JQuery Script autosuggest -->
+<script>
+    $( function() {
+      $( "#id_item_code" ).autocomplete({
+        source: "{% url 'autocomplete_code' %}",
+      });
+      $('#id_qty').keyup(function(e){
+        var sub_total = $('#id_price_quoted').val() * $('#id_qty').val();
+        console.log(sub_total)
+        $('#id_sub_total').val(sub_total);
+      });
+      // $('#id_item_description').val(response.description)
+      })
+    $( function() {
+      $( "#id_item_description" ).autocomplete({
+        source: "{% url 'autocomplete_desc' %}"      
+      });
+    } );
+    </script>
+  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+{% endblock %}

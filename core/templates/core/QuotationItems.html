@@ -1,0 +1,66 @@
+{% extends 'core/base.html' %}
+{% block content %}
+{% load crispy_forms_tags %}
+
+<div class="col-md-10 offset-md-1 mt-1">
+  <div class="container-lg" style="text-align: center">
+    <div class="row">
+      <div class="col-sm-12" style="padding:30px;border: radius 30px;">
+        <h2 class="text-center alert alert-danger">
+          All Item Entries for all Quotations
+        </h2>
+        <form method="GET">
+          <div class="form-row">
+              <div class="form-group col-sm-12">
+                  {{myfilter.form.item_code|as_crispy_field}}
+              </div>
+              <div class="form-group col-sm-12">
+                <button class="btn btn-primary" type="submit">Search</button>
+            </div>
+          </div>
+          <div class="form-row">
+            
+          </div>
+      </form>
+        <div class="my-custom-toolbar" style="position: relative; height: 600px; overflow: auto; table-layout: fixed;">
+          <div class="table-wrapper-scroll-y" style="display: block;">
+            <table class="table table-bordered mb-0" id = "dt-vtable">
+              <thead style="position: sticky;top: 0" class="thead-light">
+                  <th>Date</th>
+                  <th>Party</th>
+                  <th scope="col">Item Code</th>
+                  <th scope="col">Price Quoted</th>
+                  <th scope="col">Disc %</th>
+                  <th scope="col">Margin %</th>
+                  <th scope="col">Qty</th>
+                  <th scope="col">Sub Total</th>
+                  <th></th>
+              </thead>
+              <tbody id = "tbody">
+                {% for quotationitem in quotationitems %}
+                  <tr>
+                    <td>{{quotationitem.quotation.date_posted}}</td>
+                    <td><a href="{% url 'quote-items-for-party' quotationitem.id %}">{{quotationitem.quotation.party.name}}</a></td>
+                    <td><a href="{% url 'quote-items-for-item-code' quotationitem.id %}">{{quotationitem.item_code}}</a></td>
+                    <td>₹ {{quotationitem.price_quoted}}</td>
+                    <td>{{quotationitem.discount}} %</td>
+                    <td>{{quotationitem.margin}} %</td>
+                    <td>{{quotationitem.qty}} Nos</td>
+                    <td>₹ {{quotationitem.sub_total}}</td>
+                    <td><a href="{% url 'create-quote-items' quotationitem.quotation.id %}"><button class="btn btn-warning btn-edit">Manage Items</button></a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+{% endblock content %}

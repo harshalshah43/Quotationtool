@@ -1,0 +1,85 @@
+{% extends 'core/base.html' %}
+{% block content %}
+{% load crispy_forms_tags %}
+<!-- JQuery - autosuggest -->
+<link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+
+<div class="col-md-10 offset-md-1 mt-0">
+    <div class="container-lg" style="text-align: center">
+        <div class="row">
+            {% include 'partials/menu.html' %}
+            <div class="col-sm-9" style="padding:30px;border: radius 30px;">
+                <h4 class="text-center alert alert-danger">
+                    Quotations
+                </h4>
+                <form method="GET">
+                    <div class="form-row">
+                        <div class="form-group col-sm-2">
+                            {{myfilter.form.qno|as_crispy_field}}
+                        </div>
+                        <div class="form-group col-sm-2">
+                            {{myfilter.form.enq_ref|as_crispy_field}}
+                        </div>
+                        <div class="form-group col-sm-2">
+                            {{myfilter.form.party|as_crispy_field}}
+                        </div>
+                        <div class="form-group col-sm-2">
+                            {{myfilter.form.date_posted|as_crispy_field}}
+                        </div>
+                        <div class="form-group col-sm-2">
+                            {{myfilter.form.total|as_crispy_field}}
+                        </div>
+                        <div class="form-group col-sm-2">
+                            <button class="btn btn-primary" type="submit">Search</button>
+                        </div>
+                    </div>
+                </form>
+                <div class ="my-custom-scrollbar mt-1" style="position: relative; height: 600px; overflow: auto; table-layout: fixed;">
+                    <div class="table-wrapper-scroll-y" style="display: block;">
+                        <table class="table table-bordered mb-0" id = "dt-vtable">
+                            <thead style="position: sticky;top: 0" class="thead-light">
+                                <th>Quotation Date</th>
+                                <th>Party</th>
+                                <th>Quotation Number</th>
+                                <th>Enquiry Reference Number</th>
+                                <th>Total Amount</th>
+                                <th>Total Nos</th>
+                                <th>Actions</th>
+                            </thead>
+                        {% for quotation in quotations %}
+                        <tr>
+                            <td>{{quotation.date_posted|date:"D d M Y"}}</td>
+                            <td><a href = "{% url 'quote-for-party' quotation.party.id %}">{{quotation.party.name}} </td>
+                            <td>{{quotation.qno}}</td>
+                            <td>{{quotation.enq_ref}}</td>
+                            <!-- <td><a href = "{% url 'edit-tandc' quotation.id %}">T & C </td> -->
+                            <td>{{quotation.total}} ₹</td>
+                            <td>{{quotation.totalnos}} Nos</td>
+                            <td><a href="{% url 'create-quote-items' quotation.id %}"><button class="btn btn-outline-primary btn-block btn-sm">ADD/EDIT Items</button></a>
+                                <a href="{% url 'delete-quote-confirm' quotation.id %}"><button class="btn btn-outline-danger btn-block btn-sm mt-1">DELETE</button></a>
+                                <a href="{% url 'edit-quote' quotation.id %}"><button class="btn btn-outline-warning btn-block btn-sm mt-1">EDIT</button></a>
+                                <a href="{% url 'view-printable-version-pdf' quotation.id %}" target="_blank"><button type="button" class="btn btn-success btn-block btn-sm mt-1">PRINT VIEW</button></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <!-- <tr>
+                            <td> <a href="{% url 'parties' %}"><button class="btn btn-primary btn-block">Party List</button></a></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td><a href="{% url 'quotations' %}"><button class="btn btn-primary btn-block">Quotation List</button></a></td>
+                        </tr> -->
+                        </table>
+                    </div>
+                </div>
+            </div> 
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+
+{% endblock %}

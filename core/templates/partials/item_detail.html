@@ -1,0 +1,6 @@
+
+  <li class="list-group-item"  hx-target = "this" hx-swap = "innerHTML">
+    Item Code: {{item.item_code}} Purchase Price: {{item.purchase_price}} Qty: {{item.qty}} Sub Total: {{item.sub_total}}
+    <button class="btn btn-primary btn-md" hx-get = "{% url 'item-update' item.id %}">Update</button>
+    <button class="btn btn-danger btn-md" hx-post = "{% url 'item-delete' item.id %}">Delete</button>
+  </li>

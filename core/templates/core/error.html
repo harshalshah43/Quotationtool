@@ -1,0 +1,8 @@
+{% extends "core/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container">
+<h3 class="display-12">Object does not exist</h3>
+<a href="{% url 'quotations' %}"><button type="button" class="btn btn-warning">Back To Home</button></a>
+</div>
+{% endblock content %}

@@ -1,0 +1,283 @@
+{% extends "core/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<!-- JQuery - autosuggest -->
+<link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+<div class="col-md-10 offset-md-1 mt-5">
+<div class = "container-lg">
+  <h2 class="text-center alert alert-danger">
+    {{quote.party.name}}
+  </h2>
+  <div class="row">
+    <div class="col-sm-3">
+      <h4 class="text-center alert alert-info">Add/Edit Items</h4>
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="itemid" id ="itemid"/>
+        <div class="form-group">
+          {{form.item_code|as_crispy_field}} 
+        </div>
+        <div class="form-row">
+          <div class="form-group col-sm-6">
+            <label for="inputEmail4">MRP</label>
+            <input type="text" name = "mrp" class="form-control" id = "id_mrp" value = "" placeholder="MRP will appear here">
+          </div>
+          <div class="form-group col-sm-6">
+            <label for="inputEmail4">BP</label>
+            <input type="text" name = "bp" class="form-control" id = "id_bp" value = "" placeholder="BP will appear here">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-sm-6">
+            {{form.discount|as_crispy_field}} 
+          </div>
+          <div class="form-group col-sm-6">
+            {{form.margin|as_crispy_field}} 
+          </div>
+        </div>
+        <div class="form-group">
+          {{form.price_quoted|as_crispy_field}} 
+        </div>
+        <div class="form-group">
+          {{form.qty|as_crispy_field}} 
+        </div>
+        <div class="form-group">
+          {{form.sub_total|as_crispy_field}} 
+        </div>
+        <input type="button" class="btn btn-success btn-block" id = "id_save" value="Save">
+        <!-- <button class="btn btn-success btn-block" id = "id_save">Save</button> -->
+        <br/>
+      </form>
+      <form method="POST" enctype="multipart/form-data" action = "{% url 'back' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{request.META.HTTP_REFERER}}">
+        <button class="btn btn-warning" type="submit" name="action">Back</button>
+      </form>
+      <br/>
+      <div id = "msg" class="alert alert-danger" style="display: none;"></div>
+    </div>
+    <div class="col-sm-9">
+      <h4 class="text-center alert alert-info" id = "h4-class">Quotation no: {{quote.qno}} 
+        <a href="{% url 'download-quote-csv' quote.id %}"><button type="button" class="btn btn-primary btn-sm">Download csv</button></a>
+      </h4>
+      <h6>
+        <!-- <p style="float:left"><a href="{% url 'quotations' %}">Quotations List</a>
+          <a href="{% url 'parties' %}" style="color: green;">Parties List</a>
+        </p>  -->
+        <p style="float:right">
+          <a href="{% url 'create-party-and-quote' %}"><button class="btn btn-outline-danger btn-sm">New Quote</button></a>
+          <a href="{% url 'create-quote-for-party' quote.party.id %}"><button class="btn btn-outline-danger btn-sm">Another Quote</button></a>
+          <a href = "{% url 'edit-quote' quote.id %}" style="color: yellowgreen;"><button class="btn btn-outline-success btn-sm">Edit Qno/Enq Ref_no</button></a> 
+          Date: {{quote.date_posted|date:"D d M Y"}} 
+        </p>
+      </h6>
+      <!-- <div class="my-custom-scrollbar" style="position: relative;height: 600px; overflow: auto;table-layout: fixed;">
+      <div class="table-wrapper-scroll-y" style="display: block;"> -->
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col">Item Code</th>
+              <th scope="col">Price Quoted</th>
+              <th scope="col">Discount %</th>
+              <th scope="col">Margin %</th>
+              <th scope="col">Qty</th>
+              <th scope="col">Sub Total</th>
+              <th id = "total">Total ₹ {{quote.total}}, Total {{quote.totalnos}} Nos,<a id = "item-count">Item Count: {{item_count}}</a></th>
+            </tr>
+          </thead>
+          <tbody id = "tbody">
+            {% for item in items %}
+                <tr>
+                  <td>{{item.item_code}}</td>
+                  <td>₹ {{item.price_quoted}}</td>
+                  <td>{{item.discount}} %</td>
+                  <td>{{item.margin}} %</td>
+                  <td>{{item.qty}} Nos</td>
+                  <td>₹ {{item.sub_total}}</td>
+                  <td><a href="#"><button class="btn btn-outline-warning btn-edit" data-sid = {{item.id}}>Edit</button></a>
+                    <a href="#"><button class="btn btn-outline-danger btn-del" data-sid="{{item.id}}">Delete</button></a>
+                  </td>
+                </tr> 
+            {% endfor %}
+          </tbody>
+        </table>
+      <!-- </div>
+      </div> -->
+    </div>
+  </div>
+  <!-- <h6> -->
+    <!-- <p style="float:left;font-size: larger;">Terms and Conditions</p> -->
+    <!-- <a href="{% url 'edit-tandc' tandc.id %}"><button class="btn btn-primary btn-block">Change Terms and Conditions</button></a> -->
+  <!-- </h6> -->
+  {% include 'core/terms_conditions.html' %}
+  <h6>
+    <!-- <p style="float:left;font-size: larger;">Terms and Conditions</p> -->
+    <!-- <a href="{% url 'edit-tandc' tandc.id %}"><button class="btn btn-outline-primary btn-block">Change Terms and Conditions</button></a> -->
+    <a href="{% url 'view-printable-version-pdf' quote.id %}" target="_blank"><button type="button" class="btn btn-success btn-block mt-3">View Printable Version</button></a>
+    <a href="{% url 'delete-quote-confirm' quote.id %}"><button class="btn btn-danger btn-block mt-3">Delete Full Quote</button></a>
+  </h6>
+</div>
+</div>
+<script>
+  $(function(){
+    $( "#id_item_code" ).autocomplete({
+      source: "{% url 'autocomplete_code' %}",
+    });
+  //   $('#id_item_code').keyup(function(e){
+  //     $.ajax({
+  //     url:"{% url 'auto_fill_get_item_price' %}",
+  //     type:'get',
+  //     data: {
+  //       'item_code':$("#id_item_code").val()
+  //     },
+  //     success: function(response){
+  //       // console.log("call back to front end",response.description);
+  //       $('#id_price_quoted').val(response.price_quoted)
+  //       $('#id_moq').val(response.moq)
+  //     } 
+  //   })
+  // } );
+  $('#id_item_code').keyup(function(e){
+      $.ajax({
+      url:"{% url 'auto_fill_get_item_mrp' %}",
+      type:'get',
+      data: {
+        'item_code':$("#id_item_code").val()
+      },
+      success: function(response){
+        console.log("call back to front end",response.type);
+        $('#id_mrp').val(response.MRP);
+        $('#id_bp').val(response.BP);
+      } 
+    });
+  } );
+    $('#id_discount').keyup(function(e){
+      $('#id_price_quoted').val(0);
+      let mrp = $('#id_mrp').val();
+      let discount = $('#id_discount').val();
+      let result = mrp - (discount/100) * mrp;
+      console.log(result);
+      $('#id_price_quoted').val(result);
+    });
+    $('#id_margin').keyup(function(e){
+      $('#id_price_quoted').val(0);
+      let bp = $('#id_bp').val();
+      let margin = $('#id_margin').val();
+      let result = parseFloat(bp) + (margin/100) * bp;
+      console.log(result);
+      $('#id_price_quoted').val(result);
+    });
+
+    $("#id_qty").keyup(function(e){
+      let qty = $("#id_qty").val();
+      let unit_price = $("#id_price_quoted").val();
+      console.log(qty);
+      $("#id_sub_total").val(qty*unit_price);
+    });
+    //Delete
+    $("#tbody").on("click",".btn-del",function(){
+      let id = $(this).attr("data-sid");
+      let csr = $("input[name = csrfmiddlewaretoken]").val();
+      // console.log("Delete Button Clicked");
+      // console.log(id);
+      mydata = {itemid:id,csrfmiddlewaretoken:csr};
+      console.log(csr);
+      mythis = this;
+      $.ajax({
+        url: "{% url 'delete-item' %}",
+        method: "POST",
+        data:mydata,
+        success:function(response){
+          // console.log(response);
+          if (response.status == 1){
+            console.log("Delete successful");
+            $(mythis).closest("tr").fadeOut();
+            $('#total').html("Total ₹ "+response.total);
+          }
+        }
+      })
+    });
+    //Editing - Just Auto Filling Form for editing item, not edit operation 
+    $("#tbody").on("click",".btn-edit",function(){
+      let id = $(this).attr("data-sid");
+      let csr = $("input[name = csrfmiddlewaretoken]").val();
+      console.log("Edit Button Clicked");
+      // console.log(id);
+      mydata = {itemid:id,csrfmiddlewaretoken:csr};
+      $.ajax({
+        url: "{% url 'edit-item' %}",
+        method: "POST",
+        data:mydata,
+        success:function(response){
+          // console.log(response);
+          $('#itemid').val(response.itemid);
+          $('#id_item_code').val(response.item_code);
+          $('#id_discount').val(response.discount);
+          $('#id_margin').val(response.margin);
+          $('#id_price_quoted').val(response.price_quoted);
+          $('#id_qty').val(response.qty);
+          $('#id_sub_total').val(response.sub_total);
+          //Nested Ajax call
+          //After Pressing edit button fetch MRP and flood value in the MRP field box 
+          $.ajax({
+          url:"{% url 'auto_fill_get_item_mrp' %}",
+          type:'get',
+          data: {
+            'item_code':$("#id_item_code").val()
+          },
+          success: function(response){
+            // console.log("call back to front end",response.description);
+            $('#id_mrp').val(response.MRP);
+            $('#id_bp').val(response.BP);
+          } 
+        });
+        }
+      });
+    });
+    //INSERT and Edit 
+    $('#id_save').click(function(e){
+      // console.log("Save Button Clicked");
+      let i = $('#itemid').val();
+      let c = $('#id_item_code').val();
+      let d = $('#id_discount').val();
+      let m = $('#id_margin').val();
+      let p = $('#id_price_quoted').val();
+      let q = $('#id_qty').val();
+      let st = $('#id_sub_total').val();
+      let csr = $("input[name = csrfmiddlewaretoken]").val();
+      mydata= {itemid:i,item_code:c,discount:d,margin:m,price_quoted:p,qty:q,sub_total:st,csrfmiddlewaretoken:csr};
+      $.ajax({
+        url:"{% url 'save-item' quote.id %}",
+        method: "POST",
+        data: mydata,
+        success: function(response)
+        {
+          x = response.items;
+          // console.log("Hello",response.status);
+          // console.log("Hi",response.items[0].item_code);
+          let output = "";
+          for (i=0;i<x.length;i++)
+          {
+            output+= "<tr><td>" + response.items[i].item_code + "</td><td>" 
+              +"₹ "+ response.items[i].price_quoted + "</td><td>"+ response.items[i].discount +"</td><td>"+ response.items[i].margin +"</td><td>"+ response.items[i].qty + "</td><td>" 
+              +"₹ "+response.items[i].sub_total +
+              "</td><td><a href='#'><button class='btn btn-outline-warning btn-edit' data-sid = "+ response.items[i].id +">Edit</button></a> <a href='#'><button class='btn btn-outline-danger btn-del' data-sid = "+ response.items[i].id +">Delete</button></a></td></tr>";
+          }
+          $("form")[0].reset();
+          $('#tbody').html(output);
+          $('#total').html("Total ₹ "+response.total+", Total "+response.totalnos+" Nos"); //Total ₹ {{quote.total}}, Total {{quote.totalnos}} Nos
+          $('#itemid').val("");
+          console.log(response.item_count);
+          $('#item-count').html("Item Count: "+response.item_count);
+          $('#msg').text("Form Submitted Sucessfully");
+          $('#msg').show();
+        }
+      });
+    });
+  });
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+
+{% endblock content %}

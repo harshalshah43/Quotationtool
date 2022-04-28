@@ -1,0 +1,120 @@
+{% extends "core/base_copy.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<div class = "container mt-5">
+    {% load static %}
+    <div class="row">
+      <div class="col-sm-12">
+        <h2 class="text-center alert alert-info col-sm-12">                
+          <div class="container" style="width:100%">
+            <img src="{% static 'images/CITRON.jpg' %}"><br/><br/>
+              <h6 class = "card-title">147,Tavawala building , Office No:- 2,1 st floor,Lohar Chawl,Mumbai - 400 002
+              </h6>
+              <h6 class="card-subtitle mb-2 text-center">Tel:91 22 40223444,email:-citroenswg@gmail.com, www.citroenswitchgears.com</h6>
+          </div>
+        </h2>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-6">
+        <h5 class="text-left alert">
+              <h5>To,</h5>
+              <h5 class="card-title">{{quote.party}}</h5>
+              <h5 class="card-title">{{quote.party.billing_address}}</h5>
+              <h5 class="card-title">{{quote.party.pincode}}</h5>
+        </h5>
+      </div>
+      <div class = "col-sm-6">
+        <h5 class="text-left alert">
+            <h5 class="card-title">Quotation No. : {{quote.qno}}</h5><h5 class="card-title">Enq Ref No. : {{quote.enq_ref}}</h5>
+            <h5 class="card-title">{{quote.date_posted|date:"D d M Y"}}</h5>
+            <h5 class="card-title">&nbsp;&nbsp;</h5>
+            <h5 class="card-title">&nbsp;&nbsp;</h5>
+        </h5>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12">
+        <table class="table table">
+          <thead>
+            <tr>
+              <th scope="col">Item Code</th>
+              <th scope="col">Item Decription</th>
+              <th scope="col">Unit Price</th>
+              <th scope="col">Qty</th>
+              <th scope="col">Sub Total</th>
+            </tr>
+          </thead>
+          <tbody id = "tbody">
+            {% for item in items_list %}
+                <tr>
+                  <td>{{item.item.item_code}}</td>
+                  <td>{{item.item_description}}</td>
+                  <td>₹ {{item.item.price_quoted}}</td>
+                  <td>{{item.item.qty}} Nos</td>
+                  <td>₹ {{item.item.sub_total}}</td>
+                </tr>
+            {% endfor %}
+          </tbody>
+          <tr style="font-weight: bold;">
+              <td scope="col">Total</td>
+              <td scope="col"></td>
+              <td scope="col"></td>
+              <td scope="col">{{quote.totalnos}} Nos</td>
+              <td id = "total">₹ {{quote.total}}</td>
+            </tr>
+          <tr style="font-weight: bold;">
+            <td>GST (18%)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>₹ {{gst_18}}</td>
+          </tr>
+          <tr style="font-weight: bold;">
+            <td>Total (18% GST)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>₹ {{total_gst}}</td>
+          </tr>
+        </table>
+        <div class="text-left alert alert-info" style="font-size: larger;">
+          <table class="borderless">
+              <thead>
+                  <th></th>
+                  <th></th>
+              </thead>
+              <tbody>
+                  <tr>
+                      <td>Prices</td>
+                      <td>:{{tandc.prices}}</td>
+                  </tr>
+                  <tr>
+                      <td>Taxes</td>
+                      <td>:{{tandc.taxes}}</td>
+                  </tr>
+                  <tr>
+                    <td>Delivery</td>
+                    <td>:{{tandc.delivery}}</td>
+                </tr>
+                <tr>
+                    <td>Payment</td>
+                    <td>:{{tandc.payment}}</td>
+                </tr>
+                <tr>
+                    <td>Validity</td>
+                    <td>:{{tandc.validity}}</td>
+                </tr>
+                <tr>
+                    <td>Freight</td>
+                    <td>:{{tandc.freight}}</td>
+                </tr>
+              </tbody>
+          </table>
+          <p class="article-content">{{tandc.comments|linebreaks}}</p>
+      </div>
+      </div>
+    </div>
+</div>
+{% endblock content %}

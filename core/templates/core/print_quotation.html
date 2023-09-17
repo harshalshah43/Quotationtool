@@ -2,17 +2,20 @@
 {% load crispy_forms_tags %}
 {% block content %}
 
-<div class = "container mt-5">
+<div class = "container mt-2">
     {% load static %}
     <div class="row">
       <div class="col-sm-12">
         <h2 class="text-center alert alert-info col-sm-12">                
-          <div class="container" style="width:100%">
-            <img src="{% static 'images/CITRON.jpg' %}"><br/><br/>
-              <h6 class = "card-title">147,Tavawala building , Office No:- 2,1 st floor,Lohar Chawl,Mumbai - 400 002
+          <div class="container" style="width:100%" >
+            <h3>Quotation</h3>
+            <img src="{% static 'images/CITRON2.jpg' %}"><br/><br/>
+              
+              <h6 class = "card-subtitle mb-2 text-center">196, Haroon building, Besides Geeta bhavan restaurant, Princess Street, Marine Lines. Mumbai 400002
               </h6>
-              <h6 class="card-subtitle mb-2 text-center">Tel:91 22 40223444,email:-citroenswg@gmail.com, www.citroenswitchgears.com</h6>
-          </div>
+              <h6 class="card-subtitle mb-2 text-center">Tel/Fax :91 22 40223444,66 331994,E-mail: citroenswg@gmail.com, Website: www.citroenswitchgears.com</h6>
+              <h6 class="card-subtitle mb-2 text-center">CIN NO. U22219MH1995PTC088052
+            </div>
         </h2>
       </div>
     </div>
@@ -39,8 +42,8 @@
         <table class="table table">
           <thead>
             <tr>
-              <th scope="col">Item Code</th>
               <th scope="col">Item Decription</th>
+              <th scope="col">Item Code</th>
               <th scope="col">Unit Price</th>
               <th scope="col">Qty</th>
               <th scope="col">Sub Total</th>
@@ -49,8 +52,9 @@
           <tbody id = "tbody">
             {% for item in items_list %}
                 <tr>
+                  <td>{{item.item.item_description}}</td>
                   <td>{{item.item.item_code}}</td>
-                  <td>{{item.item_description}}</td>
+                  <!-- <td>{{item.item_description}}</td> -->
                   <td>₹ {{item.item.price_quoted}}</td>
                   <td>{{item.item.qty}} Nos</td>
                   <td>₹ {{item.item.sub_total}}</td>
@@ -80,6 +84,7 @@
           </tr>
         </table>
         <div class="text-left alert alert-info" style="font-size: larger;">
+          <b>Terms and Conditions:-</b>
           <table class="borderless">
               <thead>
                   <th></th>

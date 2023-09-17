@@ -2,12 +2,15 @@
 {% block content %}
 {% load crispy_forms_tags %}
 
-<div class="col-md-10 offset-md-1 mt-1">
+<div class="col-md-10 offset-md-1 mt-2">
   <div class="container-lg" style="text-align: center">
     <div class="row">
       <div class="col-sm-12" style="padding:30px;border: radius 30px;">
         <h2 class="text-center alert alert-danger">
           All Item Entries for all Quotations
+          {% if user.username == 'Harshal' %}
+          <a href="{% url 'download-quotationitems-csv' %}"><button type="button" class="btn btn-primary btn-sm">Download csv</button></a>
+          {% endif %}
         </h2>
         <form method="GET">
           <div class="form-row">
@@ -53,7 +56,30 @@
                 {% endfor %}
               </tbody>
           </table>
+          {% if quotationitems.has_other_pages %}
+              <ul class="pagination">
+                {% if quotationitems.has_previous %}
+                  <li class="page-item"><a class = "page-link" href="?page={{ quotationitems.previous_page_number }}">&laquo;</a></li>
+                {% else %}
+                  <li class="disabled"><span>&laquo;</span></li>
+                {% endif %}
+                {% for i in quotationitems.paginator.page_range %}
+                  {% if quotationitems.number == i %}
+                    <li class="page-item"><span class = "page-link">{{ i }} <span class="sr-only">(current)</span></span></li>
+                  {% else %}
+                    <li><a class = "page-link" href="?page={{ i }}">{{ i }}</a></li>
+                  {% endif %}
+                {% endfor %}
+                {% if quotationitems.has_next %}
+                  <li class="page-item"><a class = "page-link" href="?page={{ quotationitems.next_page_number }}">&raquo;</a></li>
+                {% else %}
+                  <li class="disabled"><span>&raquo;</span></li>
+                 {% endif %}
+              </ul>
+              {% endif %}
+              
           </div>
+          
         </div>
       </div>
     </div>

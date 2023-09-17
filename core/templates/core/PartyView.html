@@ -9,8 +9,16 @@
                 <h4 class="text-center alert alert-danger">
                     Party List
                 </h4>
+                <form method="GET">
+                    <div class = "row">
+                        <div class="form-group col-sm-12">
+                            {{myfilter.form.name|as_crispy_field}}
+                        </div>
+                    </div>
+                </form>
                 <div class="my-custom-scrollbar" style="position: relative;height: 600px; overflow: auto;table-layout: fixed;">
                 <div class="table-wrapper-scroll-y" style="display: block;">
+                
                 <table class="table table-striped">
                     <thead>
                         <th>Name</th>

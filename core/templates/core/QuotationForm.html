@@ -4,13 +4,13 @@
 
 <!-- JQuery - autosuggest -->
 <link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
-<div class="col-md-10 offset-md-1 mt-5">
+<div class="col-md-10 offset-md-1 mt-2">
 <div class="container-lg" style="text-align: center;">
   <div class="row">
     {% include 'partials/menu.html' %}
    <div class="col-sm-9" style="padding:30px;border: radius 30px;">
-    <h4 class="text-center alert alert-danger">{{party.name}}</h4>
-    <h4 class="text-center alert alert-info">Create Quotation</h4>
+    <h4 class="text-center alert alert-danger">{{title}} Quotation for {{party.name}}</h4>
+    <h4 class="text-center alert alert-info">Enter Quotation Details</h4>
     <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
       {{q_form|crispy}}

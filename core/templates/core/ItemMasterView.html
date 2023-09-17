@@ -13,13 +13,19 @@
       {% csrf_token %}
       <input type="hidden" name="itemid" id ="itemid"/>
       <div class="form-group">
-        {{form.item_code|as_crispy_field}} 
+        {{form.item_code|as_crispy_field}}
       </div>
       <div class="form-group">
-        {{form.item_description|as_crispy_field}} 
+        {{form.item_description|as_crispy_field}}
       </div>
       <div class="form-group">
-        {{form.MRP|as_crispy_field}} 
+        {{form.MRP|as_crispy_field}}
+      </div>
+      <div class="form-group">
+        {{form.BP|as_crispy_field}}
+      </div>
+      <div class="form-group">
+        {{form.MOQ|as_crispy_field}}
       </div>
       <input type="button" class="btn btn-success btn-block" id = "id_save" value="Save">
       <!-- <button class="btn btn-success btn-block" id = "id_save">Save</button> -->
@@ -94,8 +100,10 @@ $(function(){
           let ic = $("#id_item_code").val();
           let idesc = $("#id_item_description").val();
           let imrp = $("#id_MRP").val();
+          let ibp = $("#id_BP").val();
+          let imoq = $("#id_MOQ").val();
           let csr = $("input[name = csrfmiddlewaretoken]").val();
-          mydata = {itemid:i,item_code:ic,item_description:idesc,MRP:imrp,csrfmiddlewaretoken:csr};
+          mydata = {itemid:i,item_code:ic,item_description:idesc,MRP:imrp,BP:ibp,MOQ:imoq,csrfmiddlewaretoken:csr};
           $.ajax({
               url: "{% url 'save-item-master' %}",
               method: "POST",
@@ -106,7 +114,7 @@ $(function(){
                 let output = "";
                 for (i=0;i<x.length;i++)
                 {
-                    output+= "<tr><td>" + response.items[i].item_code + "</td><td>" 
+                    output+= "<tr><td>" + response.items[i].item_code + "</td><td>"
                     + response.items[i].item_description + "</td><td>" + response.items[i].MRP +
                     "</td><td><a href='#'><button class='btn btn-warning btn-edit' data-sid = "+ response.items[i].id +">Edit</button></a> <a href='#'><button class='btn btn-danger btn-del' data-sid = "+ response.items[i].id +">Delete</button></a></td></tr>";
                 }
@@ -140,7 +148,7 @@ $(function(){
         }
     });
     });
-    //Editing - Just Auto Filling Form for editing item, not edit operation 
+    //Editing - Just Auto Filling Form for editing item, not edit operation
     $('#tbody').on('click',".btn-edit",function(){
       let id = $(this).attr("data-sid");
       let csr = $("input[name = csrfmiddlewaretoken]").val();
@@ -155,6 +163,8 @@ $(function(){
           $("#id_item_code").val(response.item_code);
           $("#id_item_description").val(response.item_description);
           $("#id_MRP").val(response.MRP);
+          $("#id_BP").val(response.BP);
+          $("#id_MOQ").val(response.MOQ);
         }
       });
     });

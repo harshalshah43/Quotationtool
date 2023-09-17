@@ -1,0 +1,39 @@
+{% extends "core/base.html" %}  
+{% block content %}
+
+  <div class="col-md-12 offset mt-1">
+    <div class="table-responsive">
+    <table id="bootstrapdatatable" class="table table-striped table-bordered" width="100%">
+        <thead style="position: sticky;top: 0" class="thead-light">
+            <th>Date</th>
+            <th>Party</th>
+            <th>Status</th>
+            <th scope="col">Item Code</th>
+            <th scope="col">Price Quoted</th>
+            <th scope="col">Disc %</th>
+            <th scope="col">Margin %</th>
+            <th scope="col">Qty</th>
+            <th scope="col">Sub Total</th>
+            <th></th>
+        </thead>
+    <tbody>
+        {% for quotationitem in quotationitems %}
+        <tr>
+          <td>{{quotationitem.quotation.date_posted}}</td>
+          <td><a href="{% url 'quote-items-for-party' quotationitem.id %}">{{quotationitem.quotation.party.name}}</a></td>
+          {% if quotationitem.is_converted == True %}<td>Converted</td>{% else %}<td></td>{% endif %}
+          <td><a href="{% url 'quote-items-for-item-code' quotationitem.id %}">{{quotationitem.item_code}}</a></td>
+          <td>₹ {{quotationitem.price_quoted}}</td>
+          <td>{{quotationitem.discount}} %</td>
+          <td>{{quotationitem.margin}} %</td>
+          <td>{{quotationitem.qty}} Nos</td>
+          <td>₹ {{quotationitem.sub_total}}</td>
+          <td><a href="{% url 'create-quote-items' quotationitem.quotation.id %}"><button class="btn btn-warning btn-edit">Manage Items</button></a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    </table>
+    </div>
+</div>
+{% endblock content %}

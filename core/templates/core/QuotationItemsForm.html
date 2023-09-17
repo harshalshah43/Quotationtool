@@ -4,7 +4,7 @@
 
 <!-- JQuery - autosuggest -->
 <link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
-<div class="col-md-10 offset-md-1 mt-5">
+<div class="col-md-10 offset-md-1 mt-2">
 <div class = "container-lg">
   <h2 class="text-center alert alert-danger">
     {{quote.party.name}}
@@ -17,6 +17,13 @@
         <input type="hidden" name="itemid" id ="itemid"/>
         <div class="form-group">
           {{form.item_code|as_crispy_field}} 
+        </div>
+        <div class="form-group">
+          {{form.item_description|as_crispy_field}} 
+        </div>
+        <div class="form-group">
+          <label for="inputEmail4">ITEM DESCRIPTION</label>
+            <input type="text" name = "ITEM_DESCRIPTION" class="form-control" id = "id_item_desc" value = "" placeholder="MRP will appear here">
         </div>
         <div class="form-row">
           <div class="form-group col-sm-6">
@@ -46,6 +53,7 @@
           {{form.sub_total|as_crispy_field}} 
         </div>
         <input type="button" class="btn btn-success btn-block" id = "id_save" value="Save">
+        <!-- <button type="reset" class="btn btn-outline-danger">Reset</button> -->
         <!-- <button class="btn btn-success btn-block" id = "id_save">Save</button> -->
         <br/>
       </form>
@@ -59,7 +67,7 @@
     </div>
     <div class="col-sm-9">
       <h4 class="text-center alert alert-info" id = "h4-class">Quotation no: {{quote.qno}} 
-        <a href="{% url 'download-quote-csv' quote.id %}"><button type="button" class="btn btn-primary btn-sm">Download csv</button></a>
+        
       </h4>
       <h6>
         <!-- <p style="float:left"><a href="{% url 'quotations' %}">Quotations List</a>
@@ -70,6 +78,7 @@
           <a href="{% url 'create-quote-for-party' quote.party.id %}"><button class="btn btn-outline-danger btn-sm">Another Quote</button></a>
           <a href = "{% url 'edit-quote' quote.id %}" style="color: yellowgreen;"><button class="btn btn-outline-success btn-sm">Edit Qno/Enq Ref_no</button></a> 
           Date: {{quote.date_posted|date:"D d M Y"}} 
+          
         </p>
       </h6>
       <!-- <div class="my-custom-scrollbar" style="position: relative;height: 600px; overflow: auto;table-layout: fixed;">
@@ -77,19 +86,31 @@
         <table class="table table-striped">
           <thead>
             <tr>
+              <th></th>
+              <th></th> 
+              <th></th> 
+              <th></th>
+              <th></th> 
+              <th></th>
+              <th id = "total">Total Items: {{quote.totalnos}} Nos</th> 
+              <th id = "total">Rows: {{item_count}}</th> 
+            </tr>
+            <tr>
               <th scope="col">Item Code</th>
+              <th scope="col">Item Description</th>
               <th scope="col">Price Quoted</th>
               <th scope="col">Discount %</th>
               <th scope="col">Margin %</th>
               <th scope="col">Qty</th>
               <th scope="col">Sub Total</th>
-              <th id = "total">Total ₹ {{quote.total}}, Total {{quote.totalnos}} Nos,<a id = "item-count">Item Count: {{item_count}}</a></th>
+              <th id = "total">Total ₹ {{quote.total}}</th>
             </tr>
           </thead>
           <tbody id = "tbody">
             {% for item in items %}
                 <tr>
                   <td>{{item.item_code}}</td>
+                  <td>{{item.item_description}}</td>
                   <td>₹ {{item.price_quoted}}</td>
                   <td>{{item.discount}} %</td>
                   <td>{{item.margin}} %</td>
@@ -106,16 +127,18 @@
       </div> -->
     </div>
   </div>
-  <!-- <h6> -->
-    <!-- <p style="float:left;font-size: larger;">Terms and Conditions</p> -->
-    <!-- <a href="{% url 'edit-tandc' tandc.id %}"><button class="btn btn-primary btn-block">Change Terms and Conditions</button></a> -->
-  <!-- </h6> -->
+  
   {% include 'core/terms_conditions.html' %}
   <h6>
-    <!-- <p style="float:left;font-size: larger;">Terms and Conditions</p> -->
-    <!-- <a href="{% url 'edit-tandc' tandc.id %}"><button class="btn btn-outline-primary btn-block">Change Terms and Conditions</button></a> -->
+    
     <a href="{% url 'view-printable-version-pdf' quote.id %}" target="_blank"><button type="button" class="btn btn-success btn-block mt-3">View Printable Version</button></a>
     <a href="{% url 'delete-quote-confirm' quote.id %}"><button class="btn btn-danger btn-block mt-3">Delete Full Quote</button></a>
+    <a href="{% url 'duplicate-quote-confirm' quote.id %}" target="_blank"><button type="button" class="btn btn-warning btn-block mt-3">Duplicate This Quotation</button></a>
+    {% if quote.is_converted == False %}
+    <a href="{% url 'mark-converted' quote.id %}"><button class="btn btn-outline-success btn-block mt-3">MARK AS CONVERTED</button></a>
+    {% else %}
+    <a href="{% url 'mark-unconverted' quote.id %}"><button class="btn btn-outline-danger btn-block mt-3">MARK AS NOT CONVERTED</button></a>
+    {% endif %}
   </h6>
 </div>
 </div>
@@ -124,20 +147,24 @@
     $( "#id_item_code" ).autocomplete({
       source: "{% url 'autocomplete_code' %}",
     });
-  //   $('#id_item_code').keyup(function(e){
-  //     $.ajax({
-  //     url:"{% url 'auto_fill_get_item_price' %}",
-  //     type:'get',
-  //     data: {
-  //       'item_code':$("#id_item_code").val()
-  //     },
-  //     success: function(response){
-  //       // console.log("call back to front end",response.description);
-  //       $('#id_price_quoted').val(response.price_quoted)
-  //       $('#id_moq').val(response.moq)
-  //     } 
-  //   })
-  // } );
+    $( "#id_item_desc" ).autocomplete({
+      source: "{% url 'autocomplete_desc' %}",
+    });
+    $('#id_item_code').keyup(function(e){
+      $.ajax({
+      url:"{% url 'auto_fill_get_item_price' %}",
+      type:'get',
+      data: {
+        'item_code':$("#id_item_code").val()
+      },
+      success: function(response){
+        // console.log("call back to front end",response.description);
+        $('#id_price_quoted').val(response.price_quoted)
+        $('#id_moq').val(response.moq)
+      } 
+    })
+  } );
+
   $('#id_item_code').keyup(function(e){
       $.ajax({
       url:"{% url 'auto_fill_get_item_mrp' %}",
@@ -146,11 +173,38 @@
         'item_code':$("#id_item_code").val()
       },
       success: function(response){
-        console.log("call back to front end",response.type);
+        console.log("call back to front end",response.BP);
+        $( "#id_bp" ).prop( "disabled", false );
+        $( "#id_margin" ).prop( "disabled", false );
+        $( "#id_mrp" ).prop( "disabled", false );
+        $( "#id_discount" ).prop( "disabled", false );
+        if(response.BP == 0.0 | response.BP == 1){
+          $( "#id_bp" ).prop( "disabled", true );
+          $( "#id_margin" ).prop( "disabled", true );
+        }
+        if(response.MRP == 0.0 | response.MRP == 1){
+          $( "#id_mrp" ).prop( "disabled", true );
+          $( "#id_discount" ).prop( "disabled", true );
+        }
         $('#id_mrp').val(response.MRP);
         $('#id_bp').val(response.BP);
+        
       } 
     });
+  } );
+    $('#id_item_code').keyup(function(e){
+      $.ajax({
+      url:"{% url 'auto_fill_get_item_desc' %}",
+      type:'get',
+      data: {
+        'item_code':$("#id_item_code").val()
+      },
+      success: function(response){
+        // console.log("call back to front end",response.description);
+        $('#id_item_description').val(response.item_description)
+        console.log(response.item_description)
+      } 
+    })
   } );
     $('#id_discount').keyup(function(e){
       $('#id_price_quoted').val(0);
@@ -158,14 +212,16 @@
       let discount = $('#id_discount').val();
       let result = mrp - (discount/100) * mrp;
       console.log(result);
+      result = result.toFixed(1)
       $('#id_price_quoted').val(result);
     });
     $('#id_margin').keyup(function(e){
       $('#id_price_quoted').val(0);
       let bp = $('#id_bp').val();
       let margin = $('#id_margin').val();
-      let result = parseFloat(bp) + (margin/100) * bp;
+      let result = parseFloat(bp/margin);
       console.log(result);
+      result = result.toFixed(1)
       $('#id_price_quoted').val(result);
     });
 
@@ -173,7 +229,9 @@
       let qty = $("#id_qty").val();
       let unit_price = $("#id_price_quoted").val();
       console.log(qty);
-      $("#id_sub_total").val(qty*unit_price);
+      let sub_total = qty*unit_price;
+      sub_total = sub_total.toFixed(1)
+      $("#id_sub_total").val(sub_total);
     });
     //Delete
     $("#tbody").on("click",".btn-del",function(){
@@ -213,6 +271,7 @@
           // console.log(response);
           $('#itemid').val(response.itemid);
           $('#id_item_code').val(response.item_code);
+          $('#id_item_description').val(response.item_description);
           $('#id_discount').val(response.discount);
           $('#id_margin').val(response.margin);
           $('#id_price_quoted').val(response.price_quoted);
@@ -240,13 +299,14 @@
       // console.log("Save Button Clicked");
       let i = $('#itemid').val();
       let c = $('#id_item_code').val();
+      let i_desc = $('#id_item_description').val();
       let d = $('#id_discount').val();
       let m = $('#id_margin').val();
       let p = $('#id_price_quoted').val();
       let q = $('#id_qty').val();
       let st = $('#id_sub_total').val();
       let csr = $("input[name = csrfmiddlewaretoken]").val();
-      mydata= {itemid:i,item_code:c,discount:d,margin:m,price_quoted:p,qty:q,sub_total:st,csrfmiddlewaretoken:csr};
+      mydata= {itemid:i,item_code:c,item_description:i_desc,discount:d,margin:m,price_quoted:p,qty:q,sub_total:st,csrfmiddlewaretoken:csr};
       $.ajax({
         url:"{% url 'save-item' quote.id %}",
         method: "POST",
@@ -259,19 +319,23 @@
           let output = "";
           for (i=0;i<x.length;i++)
           {
-            output+= "<tr><td>" + response.items[i].item_code + "</td><td>" 
+            output+= "<tr><td>" + response.items[i].item_code + "</td><td>" + response.items[i].item_description + "</td><td>" 
               +"₹ "+ response.items[i].price_quoted + "</td><td>"+ response.items[i].discount +"</td><td>"+ response.items[i].margin +"</td><td>"+ response.items[i].qty + "</td><td>" 
               +"₹ "+response.items[i].sub_total +
               "</td><td><a href='#'><button class='btn btn-outline-warning btn-edit' data-sid = "+ response.items[i].id +">Edit</button></a> <a href='#'><button class='btn btn-outline-danger btn-del' data-sid = "+ response.items[i].id +">Delete</button></a></td></tr>";
           }
           $("form")[0].reset();
           $('#tbody').html(output);
-          $('#total').html("Total ₹ "+response.total+", Total "+response.totalnos+" Nos"); //Total ₹ {{quote.total}}, Total {{quote.totalnos}} Nos
-          $('#itemid').val("");
-          console.log(response.item_count);
-          $('#item-count').html("Item Count: "+response.item_count);
+          $('#total').html("Total ₹ "+response.total+", Total "+response.totalnos+" Nos" + ", Item Count: "+response.item_count); //Total ₹ {{quote.total}}, Total {{quote.totalnos}} Nos
+          console.log("item count "+response.item_count);
+          // $('#item-count').html("Item Count: "+response.item_count);
           $('#msg').text("Form Submitted Sucessfully");
           $('#msg').show();
+          $( "#id_bp" ).prop( "disabled", false );
+          $( "#id_margin" ).prop( "disabled", false );
+          $( "#id_mrp" ).prop( "disabled", false );
+          $( "#id_discount" ).prop( "disabled", false );
+          $('#itemid').val("");
         }
       });
     });

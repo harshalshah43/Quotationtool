@@ -4,12 +4,17 @@
 
 <!-- JQuery - autosuggest -->
 <link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
-<div class="col-md-10 offset-md-1 mt-5">
+<div class="col-md-10 offset-md-1 mt-2">
 <div class="container-lg" style="text-align: center;">
   <div class="row">
     {% include 'partials/menu.html' %}
    <div class="col-sm-9" style="padding:30px;border: radius 30px;">
     <h4 class="text-center alert alert-danger">CREATE A NEW QUOTATION</h4>
+    {%if messages%}
+        {%for message in messages%}
+        <h4 class="text-center alert alert-warning">{{message}}</h4>
+        {%endfor%}
+    {%endif%}
     <h4 class="text-center alert alert-info">Enter Party Details</h4>
     <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
@@ -34,10 +39,10 @@
 <!-- Jquery autosuggest -->
 <script>
     $( function() {
-      $( "#id_party" ).autocomplete({
-        source: ""
-      });
-    } );
+      $( "#id_name" ).autocomplete({
+      source: "{% url 'autocomplete_get_party' %}"
+    });
+  } );
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
     <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>

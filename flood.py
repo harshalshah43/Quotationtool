@@ -1,7 +1,7 @@
 import pandas as pd
 import sqlite3
 import csv
-import mysql.connector
+import mysql.connector # mysql-connector-python ==    8.0.23
 
 def flood_items_t1(file_name):
     # con = sqlite3.connect("db.sqlite3")
@@ -48,5 +48,6 @@ if __name__ == '__main__':
     # flood("chunk.csv")
     # merge("Enquiry_data.csv","chunk.csv")
     # clean_data2("chunk.csv")
-    # flood_items_t1("itemst1.csv")
-    flood_items_t2("T2_PriceList.csv")
+    flood_items_t1("itemst1.csv")
+    # flood_items_t2("T2_PriceList.csv")
+    # flood_items_t2("ABB_PriceList_Cleaned_2.csv")

@@ -1,5 +1,5 @@
-from typing import List
-from cv2 import log
+# from typing import List
+# from cv2 import log
 from django.shortcuts import render,redirect
 from django.http.response import HttpResponse,JsonResponse,HttpResponseRedirect
 from .models import *
@@ -8,6 +8,7 @@ import csv
 from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
 from .filters import *
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 @login_required
 def create_party(request):
@@ -87,6 +88,27 @@ def edit_party(request,id):
 #     return render(request,'core/QuotationForm.html',context)
 
 @login_required
+def create_existing_party_quote(request):
+    # party = Party.objects.get(id=id)
+    q_form = QuotationForm()
+    context = {
+        'q_form':q_form,
+    }
+    if request.method == "POST":
+        q_form = QuotationForm(request.POST or None)
+        # t_form = TandCForm(request.POST or None)
+        if q_form.is_valid():
+            quote = q_form.save(commit = False)
+            # quote.party = party
+            quote.save()
+            tandc = TandC.objects.create(quotation = quote)
+            tandc.save()
+            return redirect('create-quote-items',id = quote.id)
+        else:
+            return render(request,'core/error.html')
+    return render(request,'core/QuotationFormExistingParty.html',context)
+
+@login_required
 def create_quote_for_party(request,id):
     party = Party.objects.get(id=id)
     q_form = QuotationForm2()
@@ -100,6 +122,7 @@ def create_quote_for_party(request,id):
         if q_form.is_valid():
             quote = q_form.save(commit = False)
             quote.party = party
+            quote.author = request.user
             quote.save()
             tandc = TandC.objects.create(quotation = quote)
             tandc.save()
@@ -108,6 +131,7 @@ def create_quote_for_party(request,id):
             return render(request,'core/error.html')
     return render(request,'core/QuotationForm.html',context)
 
+from django.contrib import messages
 @login_required
 def create_party_and_quote(request):
     p_form = PartyForm()
@@ -129,6 +153,8 @@ def create_party_and_quote(request):
             tandc = TandC.objects.create(quotation = quote)
             tandc.save()
             return redirect('create-quote-items',id = qid)
+        else:
+            messages.error(request, f'Form could not be saved')
     return render(request,'core/QuotationForm_copy.html',context)
 
 @login_required
@@ -156,22 +182,72 @@ def delete_quote(request,id):
 
 def edit_quote(request,id):
     quote = Quotation.objects.get(id=id)
-    q_form = QuotationForm2(instance=quote)
+    # p_form = PartyForm(instance=quote.party)
+    q_form = QuotationForm(instance=quote)
     if request.method == "POST":
-        q_form = QuotationForm2(request.POST,instance=quote)
+        # p_form = PartyForm(request.POST,instance=quote.party)
+        q_form = QuotationForm(request.POST,instance=quote)
         if q_form.is_valid():
+            # p_form.save()
             q_form.save()
             next = request.POST.get('next', '/')
             return HttpResponseRedirect(next)
         else:
             pass
     context = {
+        # 'p_form':p_form,
         'q_form':q_form,
-        'party':quote.party
+        'party':quote.party,
+        'title':'Edit '  
     }
     return render(request,'core/QuotationForm.html',context)
 
-@login_required       
+@login_required
+def duplicate_quote_confirm(request,id):
+    quote = Quotation.objects.get(id = id)
+    items = QuotationItems.objects.filter(quotation = quote)
+    if quote:
+        context = {
+        'quote':quote,
+        'items':items,
+        'item_count':items.count()
+        }
+        return render(request,'core/duplicate_quote_confirm.html',context)
+    else:
+        return render(request,'error.html')
+
+from django.utils import timezone
+def duplicate_quote(request,id): # order of statements is very important
+    # quote = Quotation.objects.get(id = id)
+    # print(quote.party.name)
+    # quoteitems = QuotationItems.objects.filter(quotation = quote)
+    # quote.id = None
+    # quote.save()
+    # id = quote.id
+    # print(id)
+    # return redirect('create-quote-items',id = id)
+
+    quote = Quotation.objects.get(id = id)
+    party = quote.party
+    quoteitems = QuotationItems.objects.filter(quotation = quote)
+    oldqno = quote.qno
+    quote.id = None
+    quote.author = request.user
+    quote.date_posted = timezone.now()
+    # quote.qno = oldqno + 'Revision-1'
+    quote.save()
+    tandc = TandC.objects.create(quotation = quote)
+    
+    for quoteitem in quoteitems:
+        quoteitem.id = None
+        quoteitem.quotation = quote
+        quoteitem.save()
+    tandc.save()
+    id = Quotation.objects.last().id
+    return redirect ('create-quote-items',id = id)
+
+
+@login_required
 def terms_and_conditions(request,id):
     quote = Quotation.objects.get(id=id)
     form = TandCForm()
@@ -190,7 +266,7 @@ def terms_and_conditions(request,id):
         else:
             print("Failed")
             print(form.errors)
-    
+
     return render(request,'core/TandCForm.html',context)
 
 @login_required
@@ -221,11 +297,11 @@ def edit_tandc(request,id):
 def autocomplete_item_desc(request):
     print(request.GET)
     if 'term' in request.GET:
-        qs = QuotationItems.objects.filter(description__icontains = request.GET.get('term'))[:8]
+        qs = Item.objects.filter(item_description__icontains = request.GET.get('term'))[:8]
         print(qs)
         items = list()
         for item in qs:
-            items.append(item.description)
+            items.append(item.item_description)
         return JsonResponse(items,safe = False)
 
 def autocomplete_item_code(request):
@@ -262,6 +338,25 @@ def auto_fill_get_item_mrp(request):
     context = {'MRP':item.MRP,'BP':item.BP}
     return JsonResponse(context)
 
+def auto_fill_get_item_desc(request):
+    item_code = request.GET['item_code']
+    print("item_code",item_code)
+    item = Item.objects.filter(item_code = item_code).first()
+    # print('MRP',item.MRP)
+    # print('BP',item.BP)
+    # context = {'MRP':item.MRP,'BP':item.BP}
+    context = {'item_description':item.item_description}
+    return JsonResponse(context)
+
+def autocomplete_get_party(request):
+    print(request.GET)
+    if 'term' in request.GET:
+        qs = Party.objects.filter(name__icontains = request.GET.get('term'))[:8]
+        print(qs)
+        items = list()
+        for item in qs:
+            items.append(item.name)
+        return JsonResponse(items,safe = False)
 #-----------------------------------------CRUD Quotation Items--------------------
 def create_quotation_items2(request,id):
     if Quotation.objects.filter(id=id).exists():
@@ -319,9 +414,11 @@ def save_item(request,id):
             else: # if item exists then update it with new values passed from the form
                 item = QuotationItems.objects.get(id=itemid)
                 item.item_code = request.POST['item_code']
+                item.item_description = request.POST['item_description']
                 item.discount = request.POST['discount']
                 item.margin = request.POST['margin']
                 item.price_quoted = request.POST['price_quoted']
+                # item.price_quoted = math.ceil(item.price_quoted)
                 item.qty = request.POST['qty']
                 item.sub_total = request.POST['sub_total']
                 item.save()
@@ -355,7 +452,7 @@ def edit_item(request):
     if request.method == "POST":
         id = request.POST.get('itemid')
         item = QuotationItems.objects.get(id=id)
-        item_data = {"itemid":item.id,"item_code":item.item_code,"discount":item.discount,"margin":item.margin,"price_quoted":item.price_quoted,'qty':item.qty,'sub_total':item.sub_total}
+        item_data = {"itemid":item.id,"item_code":item.item_code,"item_description":item.item_description,"discount":item.discount,"margin":item.margin,"price_quoted":item.price_quoted,'qty':item.qty,'sub_total':item.sub_total}
         qid = item.quotation.id
         quote = Quotation.objects.get(id = qid)
         items = QuotationItems.objects.filter(quotation = quote).values()
@@ -386,15 +483,30 @@ def download_quote(request,id):
     response['Content-Disposition'] = f'attachment; filename = "{quote.party} dated:{quote.date_posted}.csv"'
     return response
 
+@login_required
+def download_quotationitems_table(request):
+    response = HttpResponse(content_type = "text/csv")
+    writer = csv.writer(response)
+    writer.writerow(['item_code','qno','refno','price_quoted','qty','discount','margin','sub_total','is_converted'])
+    for item in QuotationItems.objects.all().values_list('item_code','qno','refno','price_quoted','qty','discount','margin','sub_total','is_converted'):
+        writer.writerow(item)
+    response['Content-Disposition'] = f'attachment; filename = "QuotationItems_Table:{timezone.now().date()}.csv"'
+    return response
+
 def view_printable_version(request,id):
     quote = Quotation.objects.get(id=id)
     tandc = TandC.objects.get(quotation = quote)
     items = QuotationItems.objects.filter(quotation = quote)
     items_list = []
     for item in items:
+        item.price_quoted = math.ceil(item.price_quoted)
         items_dict = dict()
         items_dict['item'] = item
-        items_dict['item_description'] = Item.objects.filter(item_code__icontains = item.item_code).first().item_description
+        item_desc = Item.objects.filter(item_code__icontains = item.item_code).first()
+        if item_desc is not None:
+            items_dict['item_description'] = Item.objects.filter(item_code__icontains = item.item_code).first().item_description
+        else:
+            items_dict['item_description'] = "None"
         items_list.append(items_dict)
     if quote:
         gst_18 = math.ceil(quote.total * 0.18)
@@ -411,42 +523,42 @@ def view_printable_version(request,id):
     else:
         return render(request,'error.html')
 
-from io import BytesIO
-from django.template.loader import get_template
-from xhtml2pdf import pisa
-from django.views import View
+# from io import BytesIO
+# from django.template.loader import get_template
+# from xhtml2pdf import pisa
+# from django.views import View
 
-@login_required
-def render_to_pdf(template_src,context_dict = {}):
-    template = get_template(template_src)
-    html = template.render(context_dict)
-    result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode(encoding = 'UTF-8')),result)
-    if not pdf.err:
-        return HttpResponse(result.getvalue(),content_type = 'application/pdf')
-    return None
+# @login_required
+# def render_to_pdf(template_src,context_dict = {}):
+#     template = get_template(template_src)
+#     html = template.render(context_dict)
+#     result = BytesIO()
+#     pdf = pisa.pisaDocument(BytesIO(html.encode(encoding = 'UTF-8')),result)
+#     if not pdf.err:
+#         return HttpResponse(result.getvalue(),content_type = 'application/pdf')
+#     return None
 
-@login_required
-def ViewPDF(request,id):
-    # def get(self,request,*args,**kwargs):
-    quote = Quotation.objects.get(id=id)
-    items = QuotationItems.objects.filter(quotation = quote)
-    if quote:
-        context = {
-        'quote':quote,
-        'items':items,
-        'item_count':items.count()
-        }
-    pdf = render_to_pdf('core/print_quotation.html',context)
-    return HttpResponse(pdf,content_type = 'application/pdf')
+# @login_required
+# def ViewPDF(request,id):
+#     # def get(self,request,*args,**kwargs):
+#     quote = Quotation.objects.get(id=id)
+#     items = QuotationItems.objects.filter(quotation = quote)
+#     if quote:
+#         context = {
+#         'quote':quote,
+#         'items':items,
+#         'item_count':items.count()
+#         }
+#     pdf = render_to_pdf('core/print_quotation.html',context)
+#     return HttpResponse(pdf,content_type = 'application/pdf')
 
 # ------------------------------VIEWS----------------------------------------------
 # class QuotationListView(ListView):
 #     model = Quotation
-#     template_name = "core/quotations.html" 
+#     template_name = "core/quotations.html"
 #     context_object_name='quotations'
 
-@login_required 
+@login_required
 def PartyMasterView(request): # Party CRUD operations
     parties = Party.objects.all()
     context = {
@@ -458,17 +570,21 @@ def PartyMasterView(request): # Party CRUD operations
 @login_required
 def PartyListView(request):
     parties = Party.objects.all()
+    myfilter = PartyFilter(request.GET,queryset=parties)
+    parties = myfilter.qs
     context = {
-        'parties':parties
+        'parties':parties,
+        'myfilter':myfilter
     }
     return render(request,'core/PartyView.html',context)
 
 @login_required
 def QuotationListView(request):
-    quotations = Quotation.objects.all().order_by('-date_posted')
+    quotations = Quotation.objects.filter(author = request.user).order_by('-date_posted')
     myfilter = QuotationFilter(request.GET,queryset=quotations)
     quotations = myfilter.qs
     context = {
+        'title':'Quotations',
         'quotations':quotations,
         'myfilter':myfilter
     }
@@ -486,7 +602,7 @@ def QuotationsListViewPartyWise(request,id):
         'myfilter':myfilter
     }
     return render(request,'core/quotations_for_party.html',context)
-    
+
 # class PartyListView(ListView):
 #     model = Party
 #     template_name = ""
@@ -496,6 +612,15 @@ def QuotationItemsView(request):
     quotationitems = QuotationItems.objects.all()
     myfilter = QuotationItemsFilter(request.GET,queryset=quotationitems)
     quotationitems = myfilter.qs
+    # print(type(enquiries.first().date_posted.month))
+    page = request.GET.get('page',1)
+    paginator = Paginator(quotationitems,10)
+    try:
+        quotationitems = paginator.page(page)
+    except PageNotAnInteger:
+        quotationitems = paginator.page(1)
+    except EmptyPage:
+        quotationitems = paginator.page(paginator.num_pages)
     context = {
         'quotationitems':quotationitems,
         'myfilter':myfilter
@@ -506,8 +631,11 @@ def QuotationItemsView(request):
 def quoteitems_for_item_code(request,id):
     item_code = QuotationItems.objects.filter(id=id).first().item_code
     quotationsitems = QuotationItems.objects.filter(item_code=item_code)
+    myfilter = QuotationItemsFilter(request.GET,queryset=quotationsitems)
+    quotationitems = myfilter.qs
     context = {
-        'quotationitems':quotationsitems
+        'quotationitems':quotationsitems,
+        'myfilter':myfilter
     }
     return render(request,'core/QuotationItems.html',context)
 
@@ -519,16 +647,19 @@ def quoteitems_for_party(request,id):
     for quote in quotations:
         quotationitems=quotationitems.union(QuotationItems.objects.filter(quotation = quote))
     # quotationitems = QuotationItems.objects.filter(quotation=party)
-    print("quotationitems",quotationitems)
+    # print("quotationitems",quotationitems)
+    myfilter = QuotationItemsFilter(request.GET,queryset=quotationitems)
+    quotationitems = myfilter.qs
     context = {
-        'quotationitems':quotationitems
+        'quotationitems':quotationitems,
+        'myfilter':myfilter
     }
     return render(request,'core/QuotationItems.html',context)
 
 @login_required
 def back(request):
         next = request.POST.get('next', '/')
-        return HttpResponseRedirect(next)  
+        return HttpResponseRedirect(next)
 
 #-----------------------------------------CRUD Items--------------------
 
@@ -560,6 +691,8 @@ def save_item_master(request):
             item.item_code = request.POST['item_code']
             item.item_description = request.POST['item_description']
             item.MRP = request.POST['MRP']
+            item.BP = request.POST['BP']
+            item.MOQ = request.POST['MOQ']
             item.save()
             context['error'] = "None"
             context['status'] = "saved"
@@ -567,7 +700,7 @@ def save_item_master(request):
         items = list(items)
         context['items'] = items
         return JsonResponse(context)
-            
+
 
 @login_required
 def ItemMasterView(request):
@@ -597,9 +730,48 @@ def edit_item_master(request):
         id = request.POST.get('itemid')
         print(id)
         item = Item.objects.get(id=id)
-        item_data = {"itemid":id,"item_code":item.item_code,"item_description":item.item_description,"MRP":item.MRP}
+        item_data = {"itemid":id,"item_code":item.item_code,"item_description":item.item_description,"MRP":item.MRP,"BP":item.BP,"MOQ":item.MOQ}
         return JsonResponse(item_data)
     else:
         return JsonResponse({'status':0})
 
+def markquotationconverted(request,id):
+    quotation = Quotation.objects.get(id = id)
+    quotation.is_converted = True
+    quotationitems = QuotationItems.objects.filter(quotation = quotation)
+    for quoteitem in quotationitems:
+        quoteitem.is_converted = True 
+        quoteitem.save()
+    quotation.save()
+    return redirect('create-quote-items',id = id)
+
+def markquotationunconverted(request,id):
+    quotation = Quotation.objects.get(id = id)
+    quotation.is_converted = False
+    quotationitems = QuotationItems.objects.filter(quotation = quotation)
+    for quoteitem in quotationitems:
+        quoteitem.is_converted = False 
+        quoteitem.save()
+    quotation.save()
+    return redirect('create-quote-items',id = id)
+
+
 # ----------------------------------------------FILTERS----------------------------------------------------
+
+
+# ----------------------test--------------------
+@login_required
+def allrows(request):
+    quotationitems = QuotationItems.objects.all()
+    context = {
+        'quotationitems':quotationitems
+    }
+    return render(request,'core/allrows.html',context)
+
+@login_required
+def allitems(request):
+    items = Item.objects.all()
+    context = {
+        'items':items
+    }
+    return render(request,'core/allitems.html',context)

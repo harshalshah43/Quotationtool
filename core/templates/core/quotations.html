@@ -2,7 +2,6 @@
 {% block content %}
 {% load crispy_forms_tags %}
 <!-- JQuery - autosuggest -->
-<link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
 
 <div class="col-md-10 offset-md-1 mt-0">
     <div class="container-lg" style="text-align: center">
@@ -38,6 +37,7 @@
                     <div class="table-wrapper-scroll-y" style="display: block;">
                         <table class="table table-bordered mb-0" id = "dt-vtable">
                             <thead style="position: sticky;top: 0" class="thead-light">
+                                <th>Status</th>
                                 <th>Quotation Date</th>
                                 <th>Party</th>
                                 <th>Quotation Number</th>
@@ -48,6 +48,7 @@
                             </thead>
                         {% for quotation in quotations %}
                         <tr>
+                            {% if quotation.is_converted == True %}<td>Converted</td>{% else %}<td></td>{% endif %}
                             <td>{{quotation.date_posted|date:"D d M Y"}}</td>
                             <td><a href = "{% url 'quote-for-party' quotation.party.id %}">{{quotation.party.name}} </td>
                             <td>{{quotation.qno}}</td>
@@ -79,7 +80,5 @@
         </div>
     </div>
 </div>
-<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
-<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
 
 {% endblock %}

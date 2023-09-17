@@ -3,7 +3,6 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    
     #CRUD parties
     path('create-party/',create_party,name = "create-party"),
     path('delete-party-confirm/<int:id>/',delete_party_confirm,name = "delete-party-confirm"),
@@ -18,8 +17,9 @@ urlpatterns = [
     path('delete-item/',delete_item,name = 'delete-item'),
     path('edit-item/',edit_item,name = 'edit-item'),
     path('download_quote_csv/<int:id>/',download_quote,name = 'download-quote-csv'),
+    path('download_quotationitems_csv/',download_quotationitems_table,name = 'download-quotationitems-csv'),
     path('view_printable_version/<int:id>/',view_printable_version,name = 'view-printable-version-pdf'),
-    path('view-pdf/<int:id>/',ViewPDF,name = 'view-pdf'),
+    # path('view-pdf/<int:id>/',ViewPDF,name = 'view-pdf'),
     # path('quote-items-form/',create_quotation_items_form,name = 'create-quote-items-form'),
     # path('item-update/<int:id>/',item_update,name= 'item-update'),
     # path('item-detail/<int:id>/',item_detail,name = 'item-detail'),
@@ -28,7 +28,9 @@ urlpatterns = [
     path('item-form/autocomplete_code/',autocomplete_item_code,name = 'autocomplete_code'),
     path('item-form/auto_fill_get_item_price/',auto_fill_get_item_price_quoted,name = 'auto_fill_get_item_price'),
     path('item-form/auto_fill_get_item_mrp/',auto_fill_get_item_mrp,name = 'auto_fill_get_item_mrp'),
-
+    path('item-form/auto_fill_get_item_desc/',auto_fill_get_item_desc,name = 'auto_fill_get_item_desc'),
+    path('item-form/autocomplete_get_party/',autocomplete_get_party,name = 'autocomplete_get_party'),
+    path('item-form/autocompete_get_item_desc/',autocomplete_item_desc,name = 'autocomplete_desc'),
     # CRUD Item MASTER
     path('create-item-master/',create_item_master,name = 'create-item-master'),
     path('save-item-master/',save_item_master,name = 'save-item-master'),
@@ -43,10 +45,16 @@ urlpatterns = [
     path('edit-quote/<int:id>/',edit_quote,name = "edit-quote"),
     path('delete-quote-confirm/<int:id>/',delete_quote_confirm,name = "delete-quote-confirm"),
     path('create-party-quote/',create_party_and_quote,name = 'create-party-and-quote'),
+    path('create-existing-party-quote/',create_existing_party_quote,name = 'create-existing-party-and-quote'),
+    path('quotation-duplication-confirm/<int:id>/',duplicate_quote_confirm,name = 'duplicate-quote-confirm'),
+    path('quotation-duplication/<int:id>/',duplicate_quote,name = 'duplicate-quote'),
+    
+    path('mark-converted/<int:id>/',markquotationconverted,name = 'mark-converted'),
+    path('mark-unconverted/<int:id>/',markquotationunconverted,name = 'mark-unconverted'),
     
     path('terms-and-conditions/<int:id>/',terms_and_conditions,name = 'terms-and-conditions'),
     path('terms-and-conditions-edit/<int:id>/',edit_tandc,name = "edit-tandc"),
-    
+
     #views
     path('quotations/',QuotationListView,name = "quotations"),
     path('quotations-for-party/<int:id>/',QuotationsListViewPartyWise,name = 'quote-for-party'),
@@ -56,6 +64,8 @@ urlpatterns = [
     path('quotationitems-for-item-code/<int:id>/',quoteitems_for_item_code,name = 'quote-items-for-item-code'),
     path('quotationitems-for-party/<int:id>/',quoteitems_for_party,name = 'quote-items-for-party'),
     #utilities
-    path('back/',back,name = 'back')
-    
+    path('back/',back,name = 'back'),
+
+    path('test/allrows',allrows,name = 'test'),
+    path('test/allitems',allitems,name = 'test')
 ]
